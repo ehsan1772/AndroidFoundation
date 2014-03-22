@@ -5,17 +5,17 @@ package com.foundation.restful;
  * 
  * @author Ehsan
  */
-public class DownLoadRequest {
-	public enum DownloadStatus{FAILED, SUCCEED, RUNNING};
+public class DownloadRequest implements Comparable<DownloadRequest> {
+	public enum DownloadStatus{FAILED, SUCCEED, RUNNING, CREATED, FAILED_FINAL};
 	
 	private String url;
 	private int downloadAttemptCounter;
-	private long requestReceivedTime;
+	private Long requestReceivedTime;
 	private long lastAttemptTime;
 	private long lastRecievedTime;
 	private DownloadStatus status;
 	
-	public DownLoadRequest(String url) {
+	public DownloadRequest(String url) {
 		this.url = url;
 		requestReceivedTime = System.currentTimeMillis();
 	}
@@ -56,7 +56,18 @@ public class DownLoadRequest {
 	public void setStatus(DownloadStatus status) {
 		this.status = status;
 	}
+
+	@Override
+	public int compareTo(DownloadRequest o) {
+		return this.requestReceivedTime.compareTo(o.getRequestReceivedTime());
+	}
 	
-	
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof DownloadRequest) {
+			return ((DownloadRequest) obj).getUrl().equals(this.getUrl());
+		}
+		return false;
+	}
 
 }

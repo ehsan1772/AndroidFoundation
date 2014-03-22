@@ -35,23 +35,25 @@ public class DownloadCommand implements Runnable {
 	public void run() {
 	    HttpClient httpclient = new DefaultHttpClient();
 	    HttpResponse response = null;
+	    ByteArrayOutputStream out = null;
+	    int status = 0;
 		try {
 			response = httpclient.execute(new HttpGet(uri));
 		    StatusLine statusLine = response.getStatusLine();
+		    status = statusLine.getStatusCode();
 		    if(statusLine.getStatusCode() == HttpStatus.SC_OK){
-		        ByteArrayOutputStream out = new ByteArrayOutputStream();
+		        out = new ByteArrayOutputStream();
 		        response.getEntity().writeTo(out);
 		        out.close();
-		        listener.deliverDownloadResult(urlString, HttpStatus.SC_OK, out);
-		   //     String responseString = out.toString();
 		    } else{
-		        listener.deliverDownloadResult(urlString, statusLine.getStatusCode(), null);
 		        //Closes the connection.
 		        response.getEntity().getContent().close();
 		    }
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			out = null;
 			e.printStackTrace();
+		} finally {
+			listener.deliverDownloadResult(urlString, status, out);
 		}
 	}
 	

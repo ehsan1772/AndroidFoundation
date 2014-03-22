@@ -1,15 +1,17 @@
 package com.foundation.restful;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.ref.WeakReference;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 
 import org.apache.http.HttpStatus;
 
-import com.foundation.restful.DownloadCommand.DownloadListener;
-
-import android.app.Activity;
+import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+
+import com.foundation.restful.DownloadCommand.DownloadListener;
 
 /** 
  * A class with singleton behavior that should be instantiated in apps
@@ -23,9 +25,13 @@ public class RestFulDataManager implements DataManager, MemoryCacheOwner, Downlo
 	private MemoryCache memoryCache;
 	private LinkedList<String> downloadQueue;
 	private int downLoadQueueSize;
-	//private LocalBroadcastManager ll;
+	private WeakReference<LocalBroadcastManager> broadcastManagerReference;
+	private LocalBroadcastManager ll;
 	
-	public RestFulDataManager(int cacheSize, int downLoadQueueSize) {
+	public static String REF_KEY = "REF_KEY";
+	
+	public RestFulDataManager(int cacheSize, int downLoadQueueSize, LocalBroadcastManager broadcastManager) {
+		broadcastManagerReference = new WeakReference<LocalBroadcastManager>(broadcastManager);
 		memoryCache = new MemoryCache(this, cacheSize, MemoryCache.MeasuringType.COUNT);
 		downloadQueue = new LinkedList<String>();
 		this.downLoadQueueSize = downLoadQueueSize;
@@ -44,14 +50,15 @@ public class RestFulDataManager implements DataManager, MemoryCacheOwner, Downlo
 		if (memoryCache.retrieve(refId) == null) {
 			addToDownloadQueue(url);
 		} else {
-			broadCastAvailability(refId);
+			broadCastUpdate(refId);
 		}
 		return refId;
 	}
 
-	private void broadCastAvailability(int refId) {
-		// TODO Auto-generated method stub
-		
+	private void broadCastUpdate(int refId) {
+		Intent intent = new Intent();
+		intent.putExtra(REF_KEY, refId);
+		broadcastManagerReference.get().sendBroadcast(intent);
 	}
 
 	private void addToDownloadQueue(String url) {
@@ -105,14 +112,11 @@ public class RestFulDataManager implements DataManager, MemoryCacheOwner, Downlo
 
 	@Override
 	public void deliverDownloadResult(String urlString, int status, ByteArrayOutputStream result) {
+		int refId = urlString.hashCode();
 		if (result != null && status == HttpStatus.SC_OK) {
-			int refId = urlString.hashCode();
 			memoryCache.add(refId, result.toString());
-			broadCastAvailability(refId);
-		} else {
-			
 		}
-		
+		broadCastUpdate(refId);
 	}
 
 }

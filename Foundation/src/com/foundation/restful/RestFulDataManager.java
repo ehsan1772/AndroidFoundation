@@ -48,22 +48,12 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 		return instance;
 	}
 	
-//	public RestFulDataManager(int cacheSize, int downLoadQueueSize, LocalBroadcastManager broadcastManager) {
-//		getApplication().getApplicationContext().
-//		broadcastManagerReference = new WeakReference<LocalBroadcastManager>(broadcastManager);
-//		memoryCache = new MemoryCache(this, cacheSize, MemoryCache.MeasuringType.COUNT);
-//		downloadQueue = new SizedArrayList<RestfulDownloadRequest>(downLoadQueueSize);
-//		this.downLoadQueueSize = downLoadQueueSize;
-//	}
-	
-	public RestFulDataManager() {
-		threadSize = THREAD_SIZE;
-		
-	//	broadcastManagerReference = new WeakReference<LocalBroadcastManager>(broadcastManager);
+	@Override
+	public void onCreate() {
+		super.onCreate();
 		memoryCache = new MemoryCache(this, CACHE_SIZE, MemoryCache.MeasuringType.COUNT);
 		downloadQueue = new SizedArrayList<RestfulDownloadRequest>(DOWNLOAD_QUEUE_SIZE);
 		instance = this;
-
 	}
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
@@ -83,6 +73,7 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 	}
 
 	//TODO the hashCode won't be unique for all entries
+
 	@Override
 	public int fetchMeData(String url) {
 		int refId = url.hashCode();
@@ -95,7 +86,7 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 	}
 
 	private void broadCastUpdate(int refId) {
-		Intent intent = new Intent();
+		Intent intent = new Intent("com.ovenbits.chucknorris.RESULT");
 		intent.putExtra(REF_KEY, refId);
 		LocalBroadcastManager.getInstance(getApplicationContext()).sendBroadcast(intent);
 	}
@@ -108,31 +99,34 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 	
 	private void attemptDownload() {
 		if (threadSize < THREAD_POOL_SIZE) {
-			DataRequest request =  downloadQueue.get(0); 
-			//we don't want the object to be deleted by SizedArrayList
-			//TODO Consider synchronizing SizedArrayList methods
-			synchronized (request) { 
-				try {
-					DownloadCommand command = new DownloadCommand(downloadQueue.get(0).getUrl(), this);
-					threadSize++;
-					new Thread(command).start();
-				} catch (URISyntaxException e) {
-					Log.e(TAG, "Invalid url : " + downloadQueue.get(0).getUrl());
-					e.printStackTrace();
+			DataRequest request =  downloadQueue.getNextRequest();
+			if (request != null) {
+				RestfulDownloadRequest restRequest = (RestfulDownloadRequest) request;
+				//we don't want the object to be deleted by SizedArrayList
+				//TODO Consider synchronizing SizedArrayList methods
+				synchronized (request) { 
+					try {
+						DownloadCommand command = new DownloadCommand(restRequest.getUrl(), this);
+						threadSize++;
+						new Thread(command).start();
+					} catch (URISyntaxException e) {
+						Log.e(TAG, "Invalid url : " + downloadQueue.get(0).getUrl());
+						e.printStackTrace();
+					}
 				}
 			}
 		}
 	}
 	
-	private DataRequest nextRequest() {
-		for (DataRequest request : downloadQueue) {
-			if (request.getStatus() == DownloadStatus.CREATED || 
-				request.getStatus() == DownloadStatus.FAILED) {
-				return request;
-			}
-		}
-		return null;
-	}
+//	private DataRequest nextRequest() {
+//		for (DataRequest request : downloadQueue) {
+//			if (request.getStatus() == DownloadStatus.CREATED || 
+//				request.getStatus() == DownloadStatus.FAILED) {
+//				return request;
+//			}
+//		}
+//		return null;
+//	}
 
 	@Override
 	public int getStatus(int refId) {
@@ -167,7 +161,7 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 	@Override
 	public <T> T getData(int refId, Class<T> clazz) {
 
-		Object result = memoryCache.retrieve(refId);
+		Object result = memoryCache.retrieveData(refId);
 		if (result != null) {
 			T t = (T) result;
 			return t;
@@ -190,7 +184,7 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 		
 		request.setLastRecievedTime(System.currentTimeMillis());
 		
-		if (result != null) {
+		if (result == null) {
 			Log.e(TAG, "Download Attemp failed");
 			return;
 		}
@@ -204,7 +198,7 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 		} else {
 			request.setStatus(DownloadStatus.FAILED);
 		}
-		
+		attemptDownload();
 	}
 
 	@Override

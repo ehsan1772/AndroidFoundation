@@ -48,8 +48,12 @@ public class MemoryCache {
 		dataLRUCache.put(key, cacheObject);
 	}
 	
-	public Object retrieve(int key) {
+	public CacheObject retrieve(int key) {
 		return dataLRUCache.get(key);
+	}
+	
+	public Object retrieveData(int key) {
+		return dataLRUCache.get(key).getValue();
 	}
 }
 

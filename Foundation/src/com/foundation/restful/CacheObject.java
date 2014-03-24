@@ -13,10 +13,11 @@ public class CacheObject {
 		this.value = value;
 		this.lifeTime = lifeTime;
 		this.key = key;
+		startTimer();
 	}
 	
 	private void startTimer() {
-		Thread timerThread = new Thread(new Runnable() {
+		timerThread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {

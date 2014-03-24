@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.foundation.restful.RestfulDownloadRequest.DownloadStatus;
+
 public class SizedArrayList<T extends DataRequest> extends ArrayList<T> {
 	private static final long serialVersionUID = -2684222090808678630L;
 	private int maxSize;
@@ -50,6 +52,18 @@ public class SizedArrayList<T extends DataRequest> extends ArrayList<T> {
 	@Override
 	public boolean addAll(int index, Collection<? extends T> c) {
 		return false;
+	}
+	
+	public T getNextRequest() {
+		for (T element : this) {
+			if (element.getStatus() != RestfulDownloadRequest.DownloadStatus.SUCCEED && 
+				element.getStatus() != RestfulDownloadRequest.DownloadStatus.RUNNING) {
+				element.setStatus(DownloadStatus.RUNNING);
+				return element;
+			}
+		}
+		
+		return null;
 	}
 	
 	

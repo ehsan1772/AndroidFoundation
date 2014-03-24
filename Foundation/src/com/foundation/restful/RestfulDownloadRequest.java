@@ -5,7 +5,7 @@ package com.foundation.restful;
  * 
  * @author Ehsan
  */
-public class DownloadRequest implements Comparable<DownloadRequest> {
+public class RestfulDownloadRequest implements DataRequest {
 	public enum DownloadStatus{FAILED, SUCCEED, RUNNING, CREATED, FAILED_FINAL};
 	
 	private String url;
@@ -15,9 +15,15 @@ public class DownloadRequest implements Comparable<DownloadRequest> {
 	private long lastRecievedTime;
 	private DownloadStatus status;
 	
-	public DownloadRequest(String url) {
+	public RestfulDownloadRequest(String url) {
 		this.url = url;
 		requestReceivedTime = System.currentTimeMillis();
+		status = DownloadStatus.CREATED;
+	}
+	
+	@Override
+	public int getId(){
+		return url.hashCode();
 	}
 	
 	public String getUrl() {
@@ -29,43 +35,59 @@ public class DownloadRequest implements Comparable<DownloadRequest> {
 	public int getDownloadAttemptCounter() {
 		return downloadAttemptCounter;
 	}
+
+	@Override
 	public void setDownloadAttemptCounter(int downloadAttemptCounter) {
 		this.downloadAttemptCounter = downloadAttemptCounter;
 	}
+
+	@Override
 	public long getRequestReceivedTime() {
 		return requestReceivedTime;
 	}
 	public void setRequestReceivedTime(long requestReceivedTime) {
 		this.requestReceivedTime = requestReceivedTime;
 	}
+
+	@Override
 	public long getLastAttemptTime() {
 		return lastAttemptTime;
 	}
+
+	@Override
 	public void setLastAttemptTime(long lastAttemptTime) {
 		this.lastAttemptTime = lastAttemptTime;
 	}
+
+	@Override
 	public long getLastRecievedTime() {
 		return lastRecievedTime;
 	}
+
+	@Override
 	public void setLastRecievedTime(long lastRecievedTime) {
 		this.lastRecievedTime = lastRecievedTime;
 	}
+
+	@Override
 	public DownloadStatus getStatus() {
 		return status;
 	}
+
+	@Override
 	public void setStatus(DownloadStatus status) {
 		this.status = status;
 	}
 
 	@Override
-	public int compareTo(DownloadRequest o) {
+	public int compareTo(DataRequest o) {
 		return this.requestReceivedTime.compareTo(o.getRequestReceivedTime());
 	}
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (obj instanceof DownloadRequest) {
-			return ((DownloadRequest) obj).getUrl().equals(this.getUrl());
+		if (obj instanceof RestfulDownloadRequest) {
+			return ((RestfulDownloadRequest) obj).getUrl().equals(this.getUrl());
 		}
 		return false;
 	}

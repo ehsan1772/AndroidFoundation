@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-public class SizedArrayList<T extends Comparable> extends ArrayList<T> {
+public class SizedArrayList<T extends DataRequest> extends ArrayList<T> {
 	private static final long serialVersionUID = -2684222090808678630L;
 	private int maxSize;
 	
@@ -50,6 +50,16 @@ public class SizedArrayList<T extends Comparable> extends ArrayList<T> {
 	@Override
 	public boolean addAll(int index, Collection<? extends T> c) {
 		return false;
+	}
+	
+	
+	public T findById(int id) {
+		for (T element : this) {
+			if (element.getId() == id) {
+				return element;
+			}
+		}
+		return null;
 	}
 
 }

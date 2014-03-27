@@ -1,4 +1,4 @@
-package com.foundation.restful;
+package com.foundation.internet;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -17,7 +17,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
  * download manager instantiated and executes instances of this class based on the 
  * desired queue size
  * 
- * @author Ehsan
+ * @author ehsan.barekati
  *
  */
 public class DownloadCommand implements Runnable {

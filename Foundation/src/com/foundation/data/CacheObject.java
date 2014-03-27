@@ -1,5 +1,12 @@
-package com.foundation.restful;
+package com.foundation.data;
 
+
+/**
+ * 
+ * A self destructive object that holds an object (value) and kills itself if not accessed within a specific time
+ * @author ehsan.barekati
+ *
+ */
 public class CacheObject {
 	private MemoryCache owner;
 	private Object value;

@@ -1,11 +1,19 @@
-package com.foundation.restful;
+package com.foundation.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.foundation.restful.RestfulDownloadRequest;
 import com.foundation.restful.RestfulDownloadRequest.DownloadStatus;
 
+/**
+ * 
+ * A collection that will retain it's size in a range
+ * @author ehsan.barekati
+ *
+ * @param <T>
+ */
 public class SizedArrayList<T extends DataRequest> extends ArrayList<T> {
 	private static final long serialVersionUID = -2684222090808678630L;
 	private int maxSize;

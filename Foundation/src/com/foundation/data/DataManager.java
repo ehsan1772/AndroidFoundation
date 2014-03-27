@@ -1,5 +1,9 @@
-package com.foundation.restful;
-
+package com.foundation.data;
+/**
+ * an interface for classes that provide access to data sources
+ * @author ehsan.barekati
+ *
+ */
 public interface DataManager {
 	public int fetchMeData(String url);
 	public int getStatus(int refId);

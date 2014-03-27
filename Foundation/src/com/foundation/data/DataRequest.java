@@ -1,7 +1,12 @@
-package com.foundation.restful;
+package com.foundation.data;
 
+import com.foundation.restful.RestfulDownloadRequest;
 import com.foundation.restful.RestfulDownloadRequest.DownloadStatus;
-
+/**
+ * an interface for any object that want to be a data request
+ * @author ehsan.barekati
+ *
+ */
 public interface DataRequest extends Comparable<DataRequest> {
 
 	public abstract int getId();

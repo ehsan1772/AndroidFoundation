@@ -1,9 +1,11 @@
 package com.foundation.restful;
 
+import com.foundation.data.DataRequest;
+
 /**
  * A data object to keep track of download status
  * 
- * @author Ehsan
+ * @author ehsan.barekati
  */
 public class RestfulDownloadRequest implements DataRequest {
 	public enum DownloadStatus{FAILED, SUCCEED, RUNNING, CREATED, FAILED_FINAL};

@@ -15,34 +15,44 @@ import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
-import com.foundation.restful.DownloadCommand.DownloadListener;
+import com.foundation.data.DataManager;
+import com.foundation.data.DataRequest;
+import com.foundation.data.MemoryCache;
+import com.foundation.data.MemoryCacheOwner;
+import com.foundation.data.SizedArrayList;
+import com.foundation.internet.DownloadCommand;
+import com.foundation.internet.DownloadCommand.DownloadListener;
 import com.foundation.restful.RestfulDownloadRequest.DownloadStatus;
 
 /** 
  * A service to download data from internet that should be declared in apps manifest that want to use it
  * it manages downloading data and Caching it
  * 
- * @author Ehsan
+ * use these default values when extending:
+ * THREAD_POOL_SIZE = 5;
+ * DOWNLOAD_QUEUE_SIZE = 500;
+ * CACHE_SIZE = 100;
+ * 
+ * @author ehsan.barekati
  *
  */
 // we are not extending IntentService because we want to control our threadpool size
-public class RestFulDataManager extends Service implements DataManager, MemoryCacheOwner, DownloadListener {
+public abstract class RestFulDataManager extends Service implements DataManager, MemoryCacheOwner, DownloadListener {
 	private static final String TAG = RestFulDataManager.class.getSimpleName();
-	private static final int THREAD_POOL_SIZE = 5;
 	private MemoryCache memoryCache;
 	private SizedArrayList<RestfulDownloadRequest> downloadQueue;
-	//private int downLoadQueueSize;
 	private WeakReference<LocalBroadcastManager> broadcastManagerReference;
 	private int threadSize;
 	
 	public final static String REQUESTED_URL = "requested_url";
 	public static String REF_KEY = "REF_KEY";
-	
-	private final static int DOWNLOAD_QUEUE_SIZE = 500;
-	private final static int THREAD_SIZE = 5;
-	private final static int CACHE_SIZE = 100;
+
 	
 	private static RestFulDataManager instance;
+	
+	protected abstract int getThreadPoolSize();
+	protected abstract int getDownloadQueueSize();
+	protected abstract int getCacheSize();
 	
 	public static RestFulDataManager getInstance() {
 		return instance;
@@ -51,8 +61,8 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		memoryCache = new MemoryCache(this, CACHE_SIZE, MemoryCache.MeasuringType.COUNT);
-		downloadQueue = new SizedArrayList<RestfulDownloadRequest>(DOWNLOAD_QUEUE_SIZE);
+		memoryCache = new MemoryCache(this, getCacheSize(), MemoryCache.MeasuringType.COUNT);
+		downloadQueue = new SizedArrayList<RestfulDownloadRequest>(getDownloadQueueSize());
 		instance = this;
 	}
 	@Override
@@ -98,7 +108,7 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 	}
 	
 	private void attemptDownload() {
-		if (threadSize < THREAD_POOL_SIZE) {
+		if (threadSize < getThreadPoolSize()) {
 			DataRequest request =  downloadQueue.getNextRequest();
 			if (request != null) {
 				RestfulDownloadRequest restRequest = (RestfulDownloadRequest) request;
@@ -117,16 +127,6 @@ public class RestFulDataManager extends Service implements DataManager, MemoryCa
 			}
 		}
 	}
-	
-//	private DataRequest nextRequest() {
-//		for (DataRequest request : downloadQueue) {
-//			if (request.getStatus() == DownloadStatus.CREATED || 
-//				request.getStatus() == DownloadStatus.FAILED) {
-//				return request;
-//			}
-//		}
-//		return null;
-//	}
 
 	@Override
 	public int getStatus(int refId) {
